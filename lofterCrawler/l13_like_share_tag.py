@@ -10,6 +10,7 @@ from lxml.html import etree
 from requests.cookies import RequestsCookieJar
 
 import lofterCrawler.useragentutil as useragentutil
+from config.save_config import LIKE1_DIR, LIKE2_DIR, SHARE_DIR, TAG_DIR, BASE_DATA_DIR
 
 """
 sessionStartTime		seesion建立的时间，不用动	同一次刷新中不变    页面刷新没变
@@ -898,10 +899,10 @@ def save_img(imgs_info, file_path, img_save_info, classify_by_tag, prior_tags, a
 def run(url, mode, save_mode, classify_by_tag, prior_tags, agg_non_prior_tag, login_info, start_time, tag_filt_num,
         min_hot, print_level, save_img_in_text, base_path):
     file_path = base_path
-    like1_file_path = base_path + "/like1_file"
-    like2_file_path = base_path + "/like2_file"
-    share_file_path = base_path + "/share_file"
-    tag_file_path = base_path + "/tag_file"
+    like1_file_path = base_path + LIKE1_DIR
+    like2_file_path = base_path + LIKE2_DIR
+    share_file_path = base_path + SHARE_DIR
+    tag_file_path = base_path + TAG_DIR
     # 文件保存位置
     if mode == "like1":
         file_path = like1_file_path
@@ -1162,7 +1163,7 @@ if __name__ == '__main__':
 
     # 文件设置  -------------------------------------------------------- #
     # 运行中产生的文件和保存文件的存放路径
-    file_path = "./dir"
+    file_path = BASE_DATA_DIR
 
     # 运行
     login_info = {"login_key": login_key, "login auth": login_auth}

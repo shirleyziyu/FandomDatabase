@@ -1,3 +1,5 @@
+from interface.save_interface import save_to_notion_format
+
 def write_html(html):
     with open("./example.html", "w", encoding="utf-8") as op:
         op.write(html)

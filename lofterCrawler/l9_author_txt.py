@@ -13,6 +13,8 @@ import lofterCrawler.useragentutil as useragentutil
 import lofterCrawler.parse_template as parse_template
 import lofterCrawler.l4_author_img as l4_author_img
 import lofterCrawler.l13_like_share_tag as l13_like_share_tag
+from interface.save_interface import save_to_notion_format
+
 
 from config.login_info import login_auth, login_key
 
@@ -259,29 +261,9 @@ def save_file(blog_infos, author_name, author_ip, arthicle_path,
                   ("\n\n\n-----评论-----\n\n" + "\n".join(comm_list) if comm_list else "")
         article = article.encode("utf-8", errors="replace").decode("utf-8", errors="replace")
 
-        # 文件名
-        if blog_info["blog_type"] == "article":
-            # 文章用 文章名by作者，替换掉非法字符
-            file_name = "{} by {}.txt".format(title, author_name)
-            file_name = file_name.replace("/", "&").replace("|", "&").replace("\\", "&").replace("<", "《") \
-                .replace(">", "》").replace(":", "：").replace('"', '”').replace("?", "？").replace("*", "·"). \
-                replace("\n", "").replace("(", "（").replace(
-                ")", "）").replace(",", "，").replace("\t", " ")
-            file_name = re.compile('[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]').sub(' ', file_name)
-            file_name = l13_like_share_tag.filename_check(file_name, article, arthicle_path, "txt")
-        else:
-            # 文本要检查是否重名
-            file_name = l13_like_share_tag.filename_check(title + ".txt", article, arthicle_path, "txt")
-
         # 写入
-        with open(arthicle_path + "/" + file_name, "w", encoding="utf-8") as op:
-            op.write(article)
-        try:
-            print("{}  保存完毕".format(file_name))
-        except:
-            print("{}  保存完毕".format(print_title))
-        all_file_name.append(file_name)
-        print()
+        save_to_notion_format(article, author_name, title, content_type=blog_type)
+
     return all_file_name
 
 

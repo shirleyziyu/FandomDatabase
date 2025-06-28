@@ -1,6 +1,6 @@
 from lofterCrawler import l9_author_txt, l13_like_share_tag
 from config.login_info import login_auth, login_key
-from config.storage_config import data_root
+from config.save_config import BASE_DATA_DIR
 
 def crawl_author_homepage(link: str):
     """爬取作者主页上的博客内容（文本/文章）"""
@@ -27,7 +27,7 @@ def crawl_like_page(link: str, mode: str = "like1"):
     l13_like_share_tag.run(
         url=link,
         mode=mode,
-        save_mode={"article": 1, "text": 1, "long article": 1, "img": 0},
+        save_mode={"article": 1, "text": 0, "long article": 1, "img": 0},# 在这里改保存的类型，目前只爬文章
         classify_by_tag=0,
         prior_tags=[],
         agg_non_prior_tag=0,
@@ -37,5 +37,5 @@ def crawl_like_page(link: str, mode: str = "like1"):
         min_hot=0,
         print_level=0,
         save_img_in_text=0,
-        base_path="./data"
+        base_path=BASE_DATA_DIR
     )
