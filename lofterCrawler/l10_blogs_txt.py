@@ -1,13 +1,13 @@
 import requests
-import useragentutil
+import lofterCrawler.useragentutil as useragentutil
 import re
 import time
 import random
 import os
 from lxml.html import etree
-import parse_template
-import l4_author_img
-from l13_like_share_tag import filename_check
+import lofterCrawler.parse_template as parse_template
+import lofterCrawler.l4_author_img as l4_author_img
+from lofterCrawler.l13_like_share_tag import filename_check
 
 
 # 博客发表时间需要从归档页面获取，内容较长，所以单独分出一个方法
@@ -137,7 +137,7 @@ def save_files(blogs_urls, login_key, login_auth):
 
 
 if __name__ == '__main__':
-    from login_info import login_auth, login_key
+    from config.login_info import login_auth, login_key
 
     # 启动程序前请先填写 login_info.py
     # 不用改代码，把链接写到./dir/txt_list里，一行一个链接，再运行这个程序，会一个一个下

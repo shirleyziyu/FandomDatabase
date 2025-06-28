@@ -9,7 +9,7 @@ from urllib import parse
 from lxml.html import etree
 from requests.cookies import RequestsCookieJar
 
-import useragentutil
+import lofterCrawler.useragentutil as useragentutil
 
 """
 sessionStartTime		seesion建立的时间，不用动	同一次刷新中不变    页面刷新没变
@@ -1142,7 +1142,7 @@ if __name__ == '__main__':
     # 非优先tag聚合：
     agg_non_prior_tag = 0
 
-    from login_info import login_auth, login_key
+    from config.login_info import login_auth, login_key
 
     # 最早时间指定，仅like2模式有效，格式：yyyy-mm-dd 例：2025-01-01
     start_time = ""

@@ -1,0 +1,3 @@
+# config.py
+NOTION_TOKEN = "在这里粘贴你的 Notion token"
+DATABASE_ID = "在这里粘贴你的数据库 ID"

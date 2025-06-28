@@ -5,8 +5,8 @@ import time
 import os
 import random
 from lxml.html import etree
-import l4_author_img
-from l13_like_share_tag import filename_check
+import lofterCrawler.l4_author_img as l4_author_img
+from lofterCrawler.l13_like_share_tag import filename_check
 
 
 # 博客发表时间需要从归档页面获取，内容较长，所以单独分出一个方法
@@ -139,7 +139,7 @@ def download_img(imgs_info):
 
 
 if __name__ == '__main__':
-    from login_info import login_auth, login_key
+    from config.login_info import login_auth, login_key
 
     # 启动程序前请先填写 login_info.py
     with open("./dir/img_list") as op:

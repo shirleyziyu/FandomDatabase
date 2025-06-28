@@ -6,9 +6,9 @@ import random
 import requests
 from urllib.parse import unquote
 from lxml.html import etree
-import useragentutil
+import lofterCrawler.useragentutil as useragentutil
 from requests.cookies import RequestsCookieJar
-from login_info import login_auth, login_key
+from config.login_info import login_auth, login_key
 
 
 def post_content(url, data, head, cookies_dict=None):

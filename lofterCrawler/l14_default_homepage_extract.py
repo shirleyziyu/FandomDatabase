@@ -1,6 +1,6 @@
 import requests
 from lxml.html import etree
-from login_info import login_auth, login_key
+from config.login_info import login_auth, login_key
 import re
 import time
 

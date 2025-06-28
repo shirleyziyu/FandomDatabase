@@ -1,1 +1,1 @@
-本模块源自(lofterSpider)[https://github.com/IshtarTang/lofterSpider]
+本模块源自[lofterSpider](https://github.com/IshtarTang/lofterSpider)

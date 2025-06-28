@@ -1,2 +1,0 @@
-import l4_author_img
-import l9_author_txt

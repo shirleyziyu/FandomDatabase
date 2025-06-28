@@ -9,12 +9,12 @@ import numpy as np
 from collections import Counter
 from urllib.parse import unquote
 
-import useragentutil
-import parse_template
-import l4_author_img
-import l13_like_share_tag
+import lofterCrawler.useragentutil as useragentutil
+import lofterCrawler.parse_template as parse_template
+import lofterCrawler.l4_author_img as l4_author_img
+import lofterCrawler.l13_like_share_tag as l13_like_share_tag
 
-from login_info import login_auth, login_key
+from config.login_info import login_auth, login_key
 
 
 def parse_archive_page(url, header, data, author_url, author_name, query_num, start_time,
