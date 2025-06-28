@@ -13,7 +13,8 @@ import lofterCrawler.useragentutil as useragentutil
 import lofterCrawler.parse_template as parse_template
 import lofterCrawler.l4_author_img as l4_author_img
 import lofterCrawler.l13_like_share_tag as l13_like_share_tag
-from interface.save_interface import save_to_notion_format
+from interface.save_interface import save_to_notion_format,sanitize_filename
+from config.save_config import BASE_DATA_DIR
 
 
 from config.login_info import login_auth, login_key
@@ -100,7 +101,7 @@ def parse_archive_page(url, header, data, author_url, author_name, query_num, st
     return parsed_blog_info
 
 
-def save_file(blog_infos, author_name, author_ip, arthicle_path,
+def save_file(blog_infos, author_name, author_ip, 
               target_tags, tags_filter_mode, get_comm, additional_break):
     all_file_name = []
     print("开始保存文章内容")
@@ -131,7 +132,6 @@ def save_file(blog_infos, author_name, author_ip, arthicle_path,
         public_time = blog_info["time"]
         url = blog_info["url"]
         blog_type = blog_info["blog_type"]
-        print("准备保存：{} ，原文连接： {} ".format(print_title, url))
 
         # 文件头
         if blog_info["blog_type"] == "article":
@@ -261,14 +261,17 @@ def save_file(blog_infos, author_name, author_ip, arthicle_path,
                   ("\n\n\n-----评论-----\n\n" + "\n".join(comm_list) if comm_list else "")
         article = article.encode("utf-8", errors="replace").decode("utf-8", errors="replace")
 
-        # 写入
-        save_to_notion_format(article, author_name, title, content_type=blog_type)
+        save_dir = os.path.join(BASE_DATA_DIR, sanitize_filename(author_name))
+        file_name = l13_like_share_tag.filename_check(sanitize_filename(title) + ".txt", article, save_dir, "txt")
+        save_to_notion_format(article, author_name, file_name)
 
     return all_file_name
 
 
 def run(author_url, target_tags, tags_filter_mode, get_comm, additional_break, start_time, end_time,
-        merge_titles, auto_chapter_merge_title, additional_chapter_index):
+        merge_titles, auto_chapter_handle, additional_chapter_index,
+        chapter_mode="group"):  # 新增参数 chapter_mode，可选 "merge" 或 "group"
+
     author_page_parse = etree.HTML(
         requests.get(author_url + "/view", headers=useragentutil.get_headers(),
                      cookies={login_key: login_auth}).content.decode("utf-8"))
@@ -288,8 +291,6 @@ def run(author_url, target_tags, tags_filter_mode, get_comm, additional_break, s
     head = l4_author_img.make_head(author_url)
 
     print("作者名 %s ,lofter ip %s,主页链接 %s" % (author_name, author_ip, author_url))
-    path = "./dir/article"
-    arthicle_path = os.path.join(path, re.sub(r'[<>:"/\\|?*]', "_", author_name))
 
     # 博客信息爬取
     blog_infos = parse_archive_page(archive_url, head, data, author_url,
@@ -299,16 +300,22 @@ def run(author_url, target_tags, tags_filter_mode, get_comm, additional_break, s
         print("作者主页中无文本/文字博客，无需爬取，程序退出")
         exit()
 
-    for x in [path, arthicle_path]:
-        if not os.path.exists(x):
-            os.makedirs(x)
-    all_file_name = save_file(blog_infos, author_name, author_ip, arthicle_path, target_tags, tags_filter_mode,
+    all_file_name = save_file(blog_infos, author_name, author_ip, target_tags, tags_filter_mode,
                               get_comm,
                               additional_break)
     all_file_name.reverse()
     print("保存完毕")
-    if merge_titles or auto_chapter_merge_title:
-        merge_chapter(merge_titles, auto_chapter_merge_title, arthicle_path, additional_chapter_index, all_file_name)
+
+    # 获取作者保存路径
+    file_path = os.path.join(BASE_DATA_DIR, sanitize_filename(author_name))
+
+    if chapter_mode == "merge":
+        if merge_titles or auto_chapter_handle:
+            merge_chapter(merge_titles, auto_chapter_handle, file_path, additional_chapter_index, all_file_name)
+    elif chapter_mode == "group":
+        if merge_titles or auto_chapter_handle:
+            group_by_titles(merge_titles, file_path, auto_group_title=bool(auto_chapter_handle))
+
 
 
 def merge_chapter(merge_titles, auto_chapter_merge_title, file_path, additional_chapter_index, all_file_names):
@@ -468,6 +475,43 @@ def merge_chapter_al(merge_titles, file_path, additional_chapter_index):
             print("")
         print("章节合并结束，合并后的文件位于{}，源文件已移动到{}".format(merge_path, origin_path))
 
+def group_by_titles(merge_titles: list, file_path: str, auto_group_title: bool = False):
+    """
+    将标题包含 merge_titles 中关键词的文章归类为子目录，支持自动识别。
+    :param merge_titles: 指定标题关键词
+    :param file_path: 文章所在目录
+    :param auto_group_title: 是否启用自动识别
+    """
+    all_files = [f for f in os.listdir(file_path) if f.endswith(".txt")]
+
+    if auto_group_title:
+        print("启用自动标题分类，分析中…")
+        title_count = {}
+        for fname in all_files:
+            key = fname.split("(")[0].split("（")[0]  # 去除括号与重复计数
+            title_count[key] = title_count.get(key, 0) + 1
+        auto_merge = [k for k, v in title_count.items() if v > 1]
+        print(f"自动识别到以下系列文章：{auto_merge}")
+        merge_titles = list(set(merge_titles + auto_merge))
+
+    # 避免重复移动：记录已移动文件
+    moved_files = set()
+
+    for keyword in merge_titles:
+        matched_files = [f for f in all_files if keyword in f and f not in moved_files]
+        if not matched_files:
+            continue
+        sub_dir = os.path.join(file_path, sanitize_filename(keyword).strip())
+        os.makedirs(sub_dir, exist_ok=True)
+        for fname in matched_files:
+            src = os.path.join(file_path, fname)
+            dst = os.path.join(sub_dir, fname)
+            if os.path.exists(src):  # 加强安全检查
+                shutil.move(src, dst)
+                moved_files.add(fname)
+        print(f"分类「{keyword}」共 {len(matched_files)} 篇，已移动至 {sub_dir}")
+
+
 
 if __name__ == '__main__':
     # 启动程序前需先填写 login_info.py
@@ -498,11 +542,11 @@ if __name__ == '__main__':
 
     # 自动章节合并，自动识别包含(上)(中)(下)(1)(2)这类的标题并合并
     # 1启动，0关闭
-    auto_chapter_merge_title = 0
+    auto_chapter_handle = 0
 
     # 额外章节序号: 合并后的文件在每章前加入"第n章"，方便一些阅读软件自动分章（只是单纯的按顺序标号，并不能自识别原标题是第几章）
     # 1启动，0关闭，未启动章节合并时无效
     additional_chapter_index = 0
 
     run(author_url, target_tags, tags_filter_mode, get_comm, additional_break, start_time, end_time,
-        chapter_merge_title, auto_chapter_merge_title, additional_chapter_index)
+    chapter_merge_title, auto_chapter_handle, additional_chapter_index,chapter_mode="group")  
