@@ -15,7 +15,7 @@ def sanitize_filename(name):
 
 def save_to_notion_format(content, author, filename, content_type="article", ext=".txt"):
     """
-    保存为 BASE_DATA_DIR/作者/文件名.txt
+    保存为 BASE_DATA_DIR/作者/文件名.txt(仅处理文本)
     - 文件名已由 filename_check 预处理
     """
     author = sanitize_filename(author)

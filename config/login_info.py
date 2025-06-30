@@ -11,4 +11,4 @@ login_key = "LOFTER-PHONE-LOGIN-AUTH"
 # 授权码 获取方式见链接
 # https://github.com/IshtarTang/lofterSpider/blob/master/笔记图/README/如何获取login_auth.png
 # https://github.com/IshtarTang/lofterSpider/blob/master/笔记图/README/如何获取login_auth2.png
-login_auth = ""
+login_auth = "2WLQYibe2VODHW_dJHlXJZrZgL-Iqt7wXXIddpDNFgDijPJqD3zQB461IPgf4n6yrdb0QhnFyXVcaMq4HDNwDbnBf5V8VAJP"

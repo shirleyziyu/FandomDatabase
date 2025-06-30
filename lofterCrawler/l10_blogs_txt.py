@@ -8,7 +8,8 @@ from lxml.html import etree
 import lofterCrawler.parse_template as parse_template
 import lofterCrawler.l4_author_img as l4_author_img
 from lofterCrawler.l13_like_share_tag import filename_check
-from interface.save_interface import save_to_notion_format
+from interface.save_interface import save_to_notion_format,sanitize_filename
+from config.save_config import BASE_DATA_DIR
 
 
 # 博客发表时间需要从归档页面获取，内容较长，所以单独分出一个方法
@@ -115,14 +116,10 @@ def save_files(blogs_urls, login_key, login_auth):
         article_head = "{} by {}[{}]\n发表时间：{}".format(title, author_name, author_ip,
                                                       public_time) + "\n" + "原文链接： " + blog_url
         if title:
-            file_name = title + " by " + author_name + ".txt"
+            file_name = title + ".txt"
         else:
             file_name = author_name + " " + public_time + ".txt"
-        file_name = file_name.replace("/", "&").replace("|", "&").replace("\\", "&").replace("<", "《") \
-            .replace(">", "》").replace(":", "：").replace('"', '”').replace("?", "？").replace("*", "·"). \
-            replace("\n", "").replace("(", "（").replace(
-            ")", "）")
-        print("准备保存：{} ，原文连接： {} ".format(file_name, blog_url))
+        
         template_id = parse_template.matcher(blog_parse)
         print("文字匹配模板为模板{}".format(template_id))
         if template_id == 0:
@@ -130,11 +127,9 @@ def save_files(blogs_urls, login_key, login_auth):
         article_content = parse_template.get_content(blog_parse, template_id, title, blog_type)
         article = article_head + "\n\n\n\n" + article_content
 
-        file_path = "./dir/article/this"
-        file_name = filename_check(file_name, article, file_path, "txt")
-        with open("{}/{}".format(file_path, file_name), "w", encoding="utf-8") as op:
-            op.write(article)
-        print("{}  保存完成\n".format(file_name, author_name))
+        save_dir = os.path.join(BASE_DATA_DIR, sanitize_filename(author_name))
+        file_name = filename_check(sanitize_filename(title) + ".txt", article, save_dir, "txt")
+        save_to_notion_format(article, author_name, file_name)
 
 
 if __name__ == '__main__':
